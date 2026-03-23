@@ -1,0 +1,325 @@
+/* ── Shell ─────────────────────────────────────────────── */
+.sidebar {
+  width: 272px;
+  min-width: 272px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  transition: width 0.22s cubic-bezier(.4,0,.2,1), min-width 0.22s, transform 0.26s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+  flex-shrink: 0;
+  z-index: 150;
+}
+
+.collapsed {
+  width: 48px;
+  min-width: 48px;
+}
+
+/* Mobile: hide off-screen, slide in when open */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    height: calc(100vh - 52px);
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+  .mobileOpen {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0,0,0,0.6);
+  }
+  .collapsed {
+    width: 272px;
+    min-width: 272px;
+  }
+  .collapseBtn { display: none; }
+}
+
+/* ── Collapse button ───────────────────────────────────── */
+.collapseBtn {
+  position: absolute;
+  top: 12px;
+  right: -1px;
+  z-index: 10;
+  width: 20px;
+  height: 36px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  color: #3d4d6b;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+  padding: 0;
+}
+.collapseBtn:hover { color: var(--accent2); background: var(--border); }
+
+/* ── Tab bar ───────────────────────────────────────────── */
+.tabBar {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+  padding: 0 4px;
+  gap: 2px;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 4px 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #3d4d6b;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--text3); }
+.tabOn {
+  color: var(--accent2);
+  border-bottom-color: var(--accent);
+}
+
+.tabIcon { font-size: 15px; }
+.tabLabel { font-size: 9.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
+
+/* ── Content ───────────────────────────────────────────── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-track { background: transparent; }
+.content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.section { display: flex; flex-direction: column; }
+
+.empty {
+  padding: 24px 18px;
+  font-size: 12.5px;
+  color: var(--text4);
+  text-align: center;
+  font-style: italic;
+}
+
+/* ── Active DB banner (Config tab) ─────────────────────── */
+.activeBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(108,99,255,0.07);
+  border: 1px solid rgba(108,99,255,0.18);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.activeBannerDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  flex-shrink: 0;
+}
+
+.activeBannerName {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.setupBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--amber);
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 5px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.switchBtn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.switchBtn:hover {
+  color: var(--accent2);
+  border-color: var(--accent);
+  background: rgba(108,99,255,0.08);
+}
+
+/* ── Footer ────────────────────────────────────────────── */
+.footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 36px;
+  background: var(--glass-deep);
+}
+
+.footerDB {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.footerDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  flex-shrink: 0;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity: 0.4; } }
+
+.footerName {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text3);
+}
+
+/* ── Namespace Switcher ────────────────────────────────── */
+.nsSwitcher {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  background: rgba(108,99,255,0.04);
+  border: 1px solid rgba(108,99,255,0.12);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.nsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nsLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text4);
+}
+
+.nsRefresh {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text4);
+  font-size: 13px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.nsRefresh:hover:not(:disabled) { color: var(--accent2); border-color: var(--accent); }
+.nsRefresh:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.nsSelect {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 11.5px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.nsSelect:focus { border-color: var(--accent); }
+
+.nsInput {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 11.5px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.nsInput::placeholder { color: var(--text4); }
+.nsInput:focus { border-color: var(--accent); }
+
+/* ── Collapsed icon strip ──────────────────────────────── */
+.iconStrip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 52px 0 12px;
+  gap: 4px;
+}
+
+.stripItem {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: none;
+  border: 1px solid transparent;
+  color: #3d4d6b;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stripItem:hover { background: rgba(255,255,255,0.04); color: var(--text2); border-color: var(--border); }
+.stripActive { background: rgba(108,99,255,0.12); color: var(--accent2); border-color: rgba(108,99,255,0.3); }
+.stripIcon { line-height: 1; }

@@ -1,0 +1,110 @@
+# ── Python ────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+pip-wheel-metadata/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.*
+!.env.example
+
+# ── FastAPI / uvicorn ──────────────────────────────
+*.log
+uvicorn.pid
+
+# ── Data / SQLite ──────────────────────────────────
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.sqlite
+data/*.sqlite3
+
+# ── ML model cache ────────────────────────────────
+# sentence-transformers downloads here
+~/.cache/
+.cache/
+models/
+*.bin
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# Chroma local storage
+chroma_data/
+chroma/
+
+# FAISS index files
+*.index
+*.faiss
+
+# ── Node / Frontend ───────────────────────────────
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+frontend/dist/
+frontend/build/
+frontend/.vite/
+node_modules/
+
+# Vite cache
+frontend/.vite/
+
+# ── API Keys / Secrets ────────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+secrets.json
+config.local.py
+
+# ── OS / Editor ───────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── Docker ────────────────────────────────────────
+.dockerignore
+
+# ── Testing ───────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ── Jupyter ───────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Misc ──────────────────────────────────────────
+*.bak
+*.tmp
+*.orig

@@ -1,0 +1,32 @@
+.panel {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.header { padding: 12px 18px 6px; }
+.title { font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; color: var(--text4); text-transform: uppercase; }
+.searchWrap { padding: 0 12px 8px; }
+.search {
+  width: 100%; background: var(--glass-deep); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text2); font-size: 12px; padding: 5px 9px;
+  outline: none; font-family: inherit; transition: border-color 0.15s;
+}
+.search:focus { border-color: rgba(108,99,255,0.4); }
+.search::placeholder { color: var(--border); }
+.tree { padding: 0 6px; }
+.node {}
+.nodeRow {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px; border-radius: 6px; font-size: 12.5px;
+}
+.clickable { cursor: pointer; }
+.clickable:hover { background: rgba(255,255,255,0.03); }
+.arrow { font-size: 10px; color: var(--text4); width: 12px; }
+.leaf { color: var(--border); width: 12px; text-align: center; font-size: 10px; }
+.nodeIcon { font-size: 13px; }
+.nodeLabel { flex: 1; color: var(--text3); }
+.badge {
+  font-size: 10.5px; color: var(--text4); background: rgba(255,255,255,0.03);
+  border-radius: 4px; padding: 0 5px; max-width: 80px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.children { padding-left: 18px; border-left: 1px solid var(--border); margin-left: 14px; }

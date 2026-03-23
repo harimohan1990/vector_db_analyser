@@ -1,0 +1,232 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+/* ── Header ──────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 8px;
+}
+
+.title {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: var(--text4);
+  text-transform: uppercase;
+}
+
+.count {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #3d4d6b;
+  background: rgba(108,99,255,0.1);
+  border: 1px solid rgba(108,99,255,0.15);
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+
+/* ── Search ──────────────────────────────────── */
+.searchWrap {
+  display: flex;
+  align-items: center;
+  margin: 0 10px 8px;
+  background: rgba(7,11,20,0.6);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 8px;
+  transition: border-color 0.15s;
+}
+.searchWrap:focus-within { border-color: rgba(108,99,255,0.4); }
+
+.searchIcon { font-size: 14px; color: var(--text4); flex-shrink: 0; }
+
+.search {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text2);
+  font-size: 12px;
+  padding: 7px 6px;
+  font-family: inherit;
+}
+.search::placeholder { color: var(--text4); }
+
+.clearSearch {
+  background: none;
+  border: none;
+  color: #3d4d6b;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.clearSearch:hover { color: var(--text2); }
+
+/* ── Tag filters ─────────────────────────────── */
+.filters {
+  display: flex;
+  gap: 4px;
+  padding: 0 10px 8px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  background: none;
+  border: 1px solid var(--border);
+  color: #3d4d6b;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.14s;
+  letter-spacing: 0.3px;
+}
+.filterBtn:hover { color: var(--text3); border-color: var(--border2); }
+.filterOn {
+  background: rgba(108,99,255,0.12);
+  border-color: rgba(108,99,255,0.35);
+  color: var(--accent2);
+}
+
+/* ── Grid ────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 0 10px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px 10px;
+  background: var(--glass-deep);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.16s;
+  overflow: hidden;
+  text-align: center;
+}
+.card:hover {
+  background: rgba(255,255,255,0.03);
+  border-color: var(--border2);
+  transform: translateY(-1px);
+}
+
+.cardActive {
+  background: rgba(var(--ac, 108,99,255), 0.08) !important;
+  border-color: color-mix(in srgb, var(--ac, var(--accent)) 40%, transparent) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--ac, var(--accent)) 15%, transparent);
+}
+
+.cardGlow {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 40px;
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(18px);
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.cardActive .cardGlow { opacity: 0.25; }
+
+.cardIcon {
+  font-size: 20px;
+  line-height: 1;
+  position: relative;
+}
+
+.cardName {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  line-height: 1.2;
+  position: relative;
+}
+.cardActive .cardName { color: #c8d3e8; }
+
+.cardBottom {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.cardTag {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text4);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.cardActive .cardTag { color: var(--text4); }
+
+.needsSetup {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--amber);
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.22);
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+.activeDot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Compare mode checkbox */
+.check {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--text4);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: transparent;
+  background: none;
+  transition: all 0.15s;
+}
+.checkOn {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.noMatch {
+  grid-column: span 2;
+  text-align: center;
+  color: var(--text4);
+  font-size: 12px;
+  padding: 20px 0;
+}

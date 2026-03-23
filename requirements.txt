@@ -1,0 +1,25 @@
+# ── Core (always required) ────────────────────────
+fastapi
+uvicorn[standard]
+uvloop
+httptools
+openai
+python-dotenv
+pydantic
+
+# ── Vector DB clients (install only what you use) ─
+pinecone              # Pinecone
+chromadb              # Chroma
+qdrant-client         # Qdrant
+pymilvus              # Milvus
+elasticsearch         # Elasticsearch
+opensearch-py         # OpenSearch
+psycopg2-binary       # pgvector (PostgreSQL)
+cassandra-driver      # Apache Cassandra
+clickhouse-connect    # ClickHouse
+deeplake              # Deep Lake
+pyvespa               # Vespa
+weaviate-client       # Weaviate
+faiss-cpu             # FAISS (use faiss-gpu on CUDA machines)
+# scann               # ScaNN — Linux only, install separately
+# vald-client         # Vald — install separately

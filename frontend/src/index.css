@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ── Design tokens (dark default) ───────────────────── */
+:root {
+  --bg:       #070b14;
+  --bg2:      #0d1117;
+  --surface:  #111827;
+  --surface2: #1a2035;
+  --surface3: #1e2842;
+  --border:   #1e2842;
+  --border2:  #273150;
+  --accent:   #6c63ff;
+  --accent2:  #818cf8;
+  --green:    #22d3a0;
+  --red:      #f43f5e;
+  --amber:    #f59e0b;
+  --text:     #e2e8f0;
+  --text2:    #94a3b8;
+  --text3:    #4a5568;
+  --text4:    #2a3350;
+  --radius:   12px;
+  --radius-lg:16px;
+  --header-h: 66px;
+  --sidebar-w:272px;
+  --trans:    all 0.18s cubic-bezier(0.4,0,0.2,1);
+  --shadow:   0 4px 24px rgba(0,0,0,0.35);
+  --shadow-lg:0 12px 48px rgba(0,0,0,0.5);
+  --glow-accent: 0 0 20px rgba(108,99,255,0.25);
+  --glow-green:  0 0 20px rgba(34,211,160,0.2);
+}
+
+/* ── Alpha-channel glass variables ───────────────────── */
+/* Used by components for glassmorphism backgrounds */
+:root {
+  --glass:      rgba(17,24,39,0.65);
+  --glass-dark: rgba(7,11,20,0.82);
+  --glass-deep: rgba(7,11,20,0.50);
+  --hover-white: rgba(255,255,255,0.02);
+  --border-half: rgba(30,40,66,0.5);
+}
+
+/* ── Light mode overrides ────────────────────────────── */
+/* Higher specificity (:root + attribute = 0-2-0) beats :root (0-1-0) */
+:root[data-theme="light"] {
+  --bg:       #f0f4ff;
+  --bg2:      #e8edf8;
+  --surface:  #ffffff;
+  --surface2: #eef1fb;
+  --surface3: #dde3f5;
+  --border:   #c8d0e8;
+  --border2:  #b0bcda;
+  --accent:   #5b52e0;
+  --accent2:  #7c74f0;
+  --green:    #0ea673;
+  --red:      #e02d4f;
+  --amber:    #d97706;
+  --text:     #111827;
+  --text2:    #374151;
+  --text3:    #6b7280;
+  --text4:    #9ca3af;
+  --shadow:   0 4px 24px rgba(0,0,0,0.10);
+  --shadow-lg:0 12px 48px rgba(0,0,0,0.16);
+  --glow-accent: 0 0 20px rgba(91,82,224,0.15);
+  --glow-green:  0 0 20px rgba(14,166,115,0.12);
+  --glass:       rgba(240,244,255,0.70);
+  --glass-dark:  rgba(232,237,248,0.88);
+  --glass-deep:  rgba(240,244,255,0.50);
+  --hover-white: rgba(0,0,0,0.03);
+  --border-half: rgba(200,208,232,0.5);
+}
+
+/* ── Midnight theme ─────────────────────────────────── */
+:root[data-theme="midnight"] {
+  --bg:       #000000;
+  --bg2:      #050510;
+  --surface:  #0a0a1a;
+  --surface2: #10102a;
+  --surface3: #16163a;
+  --border:   #1e1e4a;
+  --border2:  #28285e;
+  --accent:   #a78bfa;
+  --accent2:  #c4b5fd;
+  --green:    #34d399;
+  --red:      #fb7185;
+  --text2:    #a5b4fc;
+  --text3:    #6366f1;
+  --text4:    #312e81;
+  --glass:      rgba(10,10,26,0.72);
+  --glass-dark: rgba(5,5,16,0.88);
+  --glass-deep: rgba(10,10,26,0.50);
+  --border-half: rgba(30,30,74,0.5);
+}
+
+/* ── Ocean theme ─────────────────────────────────────── */
+:root[data-theme="ocean"] {
+  --bg:       #020c18;
+  --bg2:      #041422;
+  --surface:  #071e36;
+  --surface2: #0c2d50;
+  --surface3: #103a68;
+  --border:   #164880;
+  --border2:  #1e5a9c;
+  --accent:   #38bdf8;
+  --accent2:  #7dd3fc;
+  --green:    #22d3ee;
+  --red:      #fb923c;
+  --text:     #e0f2fe;
+  --text2:    #7dd3fc;
+  --text3:    #0ea5e9;
+  --text4:    #0c4a6e;
+  --glass:      rgba(7,30,54,0.72);
+  --glass-dark: rgba(4,20,34,0.88);
+  --glass-deep: rgba(7,30,54,0.50);
+  --border-half: rgba(22,72,128,0.5);
+  --glow-accent: 0 0 20px rgba(56,189,248,0.25);
+}
+
+/* ── Reset ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbars ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e2842; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #273150; }
+
+/* ── Selection ──────────────────────────────────────── */
+::selection { background: rgba(108,99,255,0.28); color: #e2e8f0; }
+
+/* ── Focus ring ─────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid rgba(108,99,255,0.6);
+  outline-offset: 2px;
+}
+
+/* ── Monospace ──────────────────────────────────────── */
+code, kbd, pre, .mono {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+/* ── Reduced motion ─────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,110 @@
+.wrap { display: flex; flex-direction: column; }
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text3);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--text2); background: rgba(255, 255, 255, 0.03); }
+.activeTab { color: var(--text); border-bottom-color: var(--accent); background: rgba(108, 99, 255, 0.07); }
+
+.countBadge {
+  background: rgba(108, 99, 255, 0.18);
+  color: var(--accent2);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.errBadge {
+  background: rgba(244, 63, 94, 0.18);
+  color: var(--red);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.latencyTag { font-size: 11px; }
+
+.sideBtn {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.sideBtn:hover { color: var(--text2); border-color: var(--border2); }
+
+.panel { min-height: 100px; }
+.resultList { display: flex; flex-direction: column; gap: 12px; }
+
+/* Error state */
+.errBox {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: rgba(244, 63, 94, 0.05);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+}
+.errIcon { font-size: 22px; }
+.errTitle { color: var(--red); font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.errMsg { color: var(--text2); font-size: 13px; }
+.empty { color: var(--text3); text-align: center; padding: 48px; font-size: 14px; }
+
+/* Side by side */
+.sbHeader { margin-bottom: 12px; }
+.toggleBtn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.toggleBtn:hover { color: var(--text2); }
+.sideBySide { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.sideCol {}
+.sideColHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(17, 24, 39, 0.7);
+  border: 1px solid var(--border);
+  border-radius: 10px 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+}
