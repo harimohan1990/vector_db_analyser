@@ -37,3 +37,4 @@
 .variantErr{font-size:12px;color:var(--red);background:rgba(244,63,94,.07);border-radius:7px;padding:8px 10px}
 .verdict{background:rgba(34,211,160,.08);border:1px solid rgba(34,211,160,.25);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--text3);text-align:center}
 .verdict b{color:var(--green)}
+@media(max-width:640px){.modal{width:calc(100vw - 24px)}.variants{grid-template-columns:1fr}.row{flex-direction:column}}

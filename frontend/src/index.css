@@ -18,9 +18,9 @@
   --text2:    #94a3b8;
   --text3:    #4a5568;
   --text4:    #2a3350;
-  --radius:   12px;
-  --radius-lg:16px;
-  --header-h: 66px;
+  --radius:   14px;
+  --radius-lg:18px;
+  --header-h: 94px; /* row1(52px) + row2(toolbar ~42px) */
   --sidebar-w:272px;
   --trans:    all 0.18s cubic-bezier(0.4,0,0.2,1);
   --shadow:   0 4px 24px rgba(0,0,0,0.35);
@@ -115,6 +115,96 @@
   --glow-accent: 0 0 20px rgba(56,189,248,0.25);
 }
 
+/* ── Aurora theme ★ RECOMMENDED ──────────────────────── */
+/* Electric violet + emerald on deep space — ideal for AI/data tools */
+:root[data-theme="aurora"] {
+  --bg:       #07090f;
+  --bg2:      #0c1018;
+  --surface:  #111520;
+  --surface2: #171d2e;
+  --surface3: #1d2438;
+  --border:   #1f2940;
+  --border2:  #2a3654;
+  --accent:   #7c3aed;
+  --accent2:  #a78bfa;
+  --green:    #10b981;
+  --red:      #ef4444;
+  --amber:    #f59e0b;
+  --text:     #f1f5f9;
+  --text2:    #94a3b8;
+  --text3:    #475569;
+  --text4:    #1e293b;
+  --radius:   14px;
+  --radius-lg:18px;
+  --shadow:   0 4px 24px rgba(0,0,0,0.45);
+  --shadow-lg:0 16px 56px rgba(0,0,0,0.6);
+  --glow-accent: 0 0 24px rgba(124,58,237,0.35);
+  --glow-green:  0 0 20px rgba(16,185,129,0.28);
+  --glass:      rgba(17,21,32,0.72);
+  --glass-dark: rgba(7,9,15,0.90);
+  --glass-deep: rgba(17,21,32,0.52);
+  --hover-white: rgba(255,255,255,0.025);
+  --border-half: rgba(31,41,64,0.55);
+}
+
+/* ── Neon theme — Cyberpunk dark ─────────────────────── */
+:root[data-theme="neon"] {
+  --bg:       #030308;
+  --bg2:      #07070f;
+  --surface:  #0c0c1a;
+  --surface2: #111124;
+  --surface3: #16162e;
+  --border:   #1e1e3c;
+  --border2:  #28284e;
+  --accent:   #e040fb;
+  --accent2:  #f48bfb;
+  --green:    #00e5a0;
+  --red:      #ff1744;
+  --amber:    #ffab00;
+  --text:     #ffffff;
+  --text2:    #b0c4de;
+  --text3:    #546e7a;
+  --text4:    #1c2b35;
+  --shadow:   0 4px 24px rgba(0,0,0,0.6);
+  --shadow-lg:0 16px 56px rgba(0,0,0,0.75);
+  --glow-accent: 0 0 28px rgba(224,64,251,0.45);
+  --glow-green:  0 0 20px rgba(0,229,160,0.35);
+  --glass:      rgba(12,12,26,0.78);
+  --glass-dark: rgba(3,3,8,0.92);
+  --glass-deep: rgba(12,12,26,0.55);
+  --hover-white: rgba(255,255,255,0.03);
+  --border-half: rgba(30,30,60,0.5);
+}
+
+/* ── Rose theme — Warm dark ──────────────────────────── */
+:root[data-theme="rose"] {
+  --bg:       #0f080c;
+  --bg2:      #160c11;
+  --surface:  #1e1018;
+  --surface2: #281520;
+  --surface3: #321a28;
+  --border:   #3d1f2e;
+  --border2:  #4e2a3c;
+  --accent:   #f43f5e;
+  --accent2:  #fb7185;
+  --green:    #22d3a0;
+  --red:      #ff6b6b;
+  --amber:    #fbbf24;
+  --text:     #fdf2f8;
+  --text2:    #f9a8d4;
+  --text3:    #9d4f6a;
+  --text4:    #4c1d3a;
+  --shadow:   0 4px 24px rgba(0,0,0,0.5);
+  --shadow-lg:0 16px 56px rgba(0,0,0,0.65);
+  --glow-accent: 0 0 24px rgba(244,63,94,0.4);
+  --glow-green:  0 0 20px rgba(34,211,160,0.25);
+  --glass:      rgba(30,16,24,0.75);
+  --glass-dark: rgba(15,8,12,0.90);
+  --glass-deep: rgba(30,16,24,0.52);
+  --hover-white: rgba(255,255,255,0.025);
+  --border-half: rgba(61,31,46,0.5);
+}
+
 /* ── Reset ──────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -157,4 +247,37 @@ code, kbd, pre, .mono {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ── Mobile base fixes ──────────────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --header-h: 88px; /* row1(48px) + toolbar(40px) */
+    --sidebar-w: 0px;
+  }
+
+  /* Prevent horizontal scroll */
+  html, body { overflow-x: hidden; max-width: 100vw; }
+
+  /* Safe area insets for notched phones */
+  body {
+    padding-env: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* Larger tap targets */
+  button, select, input, textarea {
+    min-height: 40px;
+    font-size: 16px !important; /* prevents iOS zoom on focus */
+  }
+
+  /* Scrollbars invisible on mobile */
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+}
+
+/* ── Touch device improvements ──────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects that feel wrong on touch */
+  .card:hover { transform: none; }
+  button:hover { transform: none !important; }
 }

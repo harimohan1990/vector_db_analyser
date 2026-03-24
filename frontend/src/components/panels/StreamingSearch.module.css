@@ -31,3 +31,4 @@
 .id{color:var(--text2);font-weight:600;width:100px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:11px}
 .meta{color:var(--text4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .waiting{text-align:center;color:var(--text4);font-size:13px;padding:20px;font-style:italic}
+@media(max-width:640px){.modal{width:calc(100vw - 32px)}.controls{flex-direction:column}}

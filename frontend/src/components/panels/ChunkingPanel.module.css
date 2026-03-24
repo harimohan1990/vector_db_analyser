@@ -34,3 +34,5 @@
 .barGroup{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
 .bar{width:100%;max-width:48px;border-radius:4px 4px 0 0;min-height:4px;transition:height .6s cubic-bezier(.4,0,.2,1)}
 .barLabel{font-size:10px;color:var(--text4)}
+@media(max-width:640px){.modal{width:calc(100vw - 24px)}.stratMeta{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:400px){.stratMeta{grid-template-columns:1fr}}

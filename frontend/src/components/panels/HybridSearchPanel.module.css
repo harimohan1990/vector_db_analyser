@@ -260,3 +260,8 @@
   font-size: 13px;
   padding: 20px 0;
 }
+
+@media (max-width: 640px) {
+  .modal { width: calc(100vw - 24px); }
+  .compareGrid { grid-template-columns: 1fr; }
+}

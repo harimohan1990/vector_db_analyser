@@ -178,3 +178,7 @@
 .histDB { color: var(--accent2); font-weight: 600; white-space: nowrap; }
 .histPreview { flex: 1; color: var(--text3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .histCount { color: var(--green); font-weight: 700; white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .modal { width: calc(100vw - 32px); }
+}

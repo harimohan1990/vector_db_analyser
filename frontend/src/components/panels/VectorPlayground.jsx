@@ -1,12 +1,31 @@
 import { useState, memo } from "react";
 import styles from "./VectorPlayground.module.css";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "/api";
+
+// Common embedding dimensions
+const COMMON_DIMS = [384, 768, 1024, 1536, 3072];
+
+function extractError(raw) {
+  // Pull out the human-readable part from verbose SDK errors
+  const match = raw.match(/"message"\s*:\s*"([^"]+)"/);
+  if (match) return match[1];
+  if (raw.length > 200) return raw.slice(0, 200) + "…";
+  return raw;
+}
+
+function generateRandom(dim) {
+  const vec = Array.from({ length: dim }, () => (Math.random() * 2 - 1));
+  // L2-normalize
+  const norm = Math.sqrt(vec.reduce((s, v) => s + v * v, 0));
+  return vec.map(v => parseFloat((v / norm).toFixed(6)));
+}
 
 const VectorPlayground = memo(function VectorPlayground({ providers, dbConfigs, onClose }) {
   const [raw, setRaw] = useState("");
   const [parsedDim, setParsedDim] = useState(null);
   const [parseError, setParseError] = useState("");
+  const [genDim, setGenDim] = useState(384);
   const [selectedDB, setSelectedDB] = useState(providers[0]?.name || "");
   const [indexName, setIndexName] = useState("");
   const [namespace, setNamespace] = useState("");
@@ -31,8 +50,13 @@ const VectorPlayground = memo(function VectorPlayground({ providers, dbConfigs, 
     }
   }
 
-  function handleParse() {
-    parseVector();
+  function handleGenerate() {
+    const vec = generateRandom(genDim);
+    setRaw(JSON.stringify(vec));
+    setParsedDim(genDim);
+    setParseError("");
+    setError("");
+    setResults(null);
   }
 
   async function handleSearch() {
@@ -57,11 +81,16 @@ const VectorPlayground = memo(function VectorPlayground({ providers, dbConfigs, 
       if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
       setResults(data);
     } catch (e) {
-      setError(e.message);
+      setError(extractError(e.message));
     } finally {
       setLoading(false);
     }
   }
+
+  // Warn if parsed dim looks wrong (< 32 dims is almost certainly a mistake)
+  const dimWarning = parsedDim !== null && parsedDim < 32
+    ? `Only ${parsedDim}D — most indexes need 384D or more. Use Generate below.`
+    : null;
 
   return (
     <div className={styles.backdrop} onClick={e => e.target === e.currentTarget && onClose()}>
@@ -72,24 +101,42 @@ const VectorPlayground = memo(function VectorPlayground({ providers, dbConfigs, 
         </div>
 
         <div className={styles.body}>
+          {/* Generate helper */}
+          <div className={styles.generateRow}>
+            <span className={styles.generateLabel}>Generate random vector:</span>
+            <select
+              className={styles.dimSelect}
+              value={genDim}
+              onChange={e => setGenDim(Number(e.target.value))}
+            >
+              {COMMON_DIMS.map(d => (
+                <option key={d} value={d}>{d}D</option>
+              ))}
+            </select>
+            <button className={styles.generateBtn} onClick={handleGenerate}>
+              ⚡ Generate
+            </button>
+          </div>
+
           {/* Vector input */}
           <div className={styles.field}>
             <label className={styles.label}>Raw Vector (JSON array)</label>
             <textarea
               className={styles.textarea}
               value={raw}
-              onChange={e => setRaw(e.target.value)}
+              onChange={e => { setRaw(e.target.value); setParsedDim(null); }}
               placeholder='[0.1, 0.2, -0.3, 0.87, ...]'
               rows={4}
               spellCheck={false}
             />
             <div className={styles.parseRow}>
-              <button className={styles.parseBtn} onClick={handleParse}>Parse</button>
+              <button className={styles.parseBtn} onClick={parseVector}>Parse</button>
               {parsedDim !== null && (
                 <span className={styles.dimBadge}>{parsedDim} dimensions</span>
               )}
               {parseError && <span className={styles.parseError}>{parseError}</span>}
             </div>
+            {dimWarning && <div className={styles.dimWarning}>⚠ {dimWarning}</div>}
           </div>
 
           {/* DB selector */}
@@ -142,7 +189,7 @@ const VectorPlayground = memo(function VectorPlayground({ providers, dbConfigs, 
             />
           </div>
 
-          {error && <div className={styles.errorBox}>{error}</div>}
+          {error && <div className={styles.errorBox}>⚠ {error}</div>}
 
           <button
             className={styles.searchBtn}

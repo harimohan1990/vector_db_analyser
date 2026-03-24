@@ -267,3 +267,11 @@
   align-self: flex-start;
 }
 .copyBtn:hover { background: rgba(34,211,160,0.14); }
+
+@media (max-width: 640px) {
+  .modal { width: calc(100vw - 24px); }
+  .statsGrid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 400px) {
+  .statsGrid { grid-template-columns: repeat(2, 1fr); }
+}

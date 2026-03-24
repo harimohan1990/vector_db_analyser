@@ -4,7 +4,7 @@
   top: var(--header-h, 56px);
   right: 0;
   bottom: 0;
-  width: 380px;
+  width: min(380px, calc(100vw - 16px));
   z-index: 300;
   pointer-events: none;
 }
@@ -277,4 +277,8 @@
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
   margin: 0;
+}
+
+@media (max-width: 640px) {
+  .overlay { width: calc(100vw - 16px); right: 8px; top: 8px; bottom: 8px; }
 }

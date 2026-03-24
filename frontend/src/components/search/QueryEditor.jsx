@@ -96,6 +96,7 @@ export default function QueryEditor({ onSearch, loading, currentDB, onSaveQuery,
           onChange={e => updateQuery(e.target.value)}
           placeholder={"Enter your semantic search query...\n\nTip: Press Cmd+Enter to search"}
           spellCheck={false}
+          rows={9}
         />
       </div>
 

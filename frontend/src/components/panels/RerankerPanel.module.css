@@ -29,3 +29,4 @@
 .score{font-weight:700;width:42px;flex-shrink:0;text-align:right}
 .origScore{font-size:10px;color:var(--text4);flex-shrink:0}
 .meta{color:var(--text4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:11px}
+@media(max-width:640px){.modal{width:calc(100vw - 24px)}.resultCols{grid-template-columns:1fr}}

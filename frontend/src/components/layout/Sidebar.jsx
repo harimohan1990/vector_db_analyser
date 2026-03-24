@@ -17,7 +17,7 @@ export default function Sidebar({
   dbConfigs, saveDbCfg, embCfg, saveEmbCfg, topK, onTopKChange,
   onUseCollection, mobileOpen, onMobileClose,
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [tab, setTab] = useState("dbs");
   const [namespaces, setNamespaces] = useState([]);
   const [nsLoading, setNsLoading] = useState(false);
@@ -74,7 +74,7 @@ export default function Sidebar({
 
   return (
     <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""} ${mobileOpen ? styles.mobileOpen : ""}`}>
-      {/* Collapse toggle */}
+      {/* Collapse toggle (desktop) */}
       <button
         className={styles.collapseBtn}
         onClick={() => setCollapsed(v => !v)}
@@ -82,6 +82,13 @@ export default function Sidebar({
       >
         {collapsed ? "›" : "‹"}
       </button>
+
+      {/* Mobile close button */}
+      {mobileOpen && (
+        <button className={styles.mobileCloseBtn} onClick={onMobileClose} aria-label="Close sidebar">
+          ✕
+        </button>
+      )}
 
       {!collapsed && (
         <>

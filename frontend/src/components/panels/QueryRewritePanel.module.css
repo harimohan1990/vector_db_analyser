@@ -23,3 +23,4 @@
 .rewriteQuery{font-size:13px;color:var(--text);line-height:1.4}
 .applyBtn{background:linear-gradient(135deg,rgba(34,211,160,.15),rgba(34,211,160,.08));border:1px solid rgba(34,211,160,.35);color:var(--green);font-size:13px;font-weight:700;padding:10px;border-radius:9px;cursor:pointer;font-family:inherit;transition:all .15s}
 .applyBtn:hover{background:rgba(34,211,160,.22);transform:translateY(-1px)}
+@media(max-width:640px){.modal{width:calc(100vw - 32px)}}

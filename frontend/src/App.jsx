@@ -24,12 +24,31 @@ import RerankerPanel from "./components/panels/RerankerPanel";
 import PromptPlayground from "./components/panels/PromptPlayground";
 import OptimizePanel from "./components/panels/OptimizePanel";
 import StreamingSearch from "./components/panels/StreamingSearch";
+import BatchSearchPanel from "./components/panels/BatchSearchPanel";
+import QueryDiffPanel from "./components/panels/QueryDiffPanel";
+import MetadataFilterPanel from "./components/panels/MetadataFilterPanel";
+import NegativeQueryPanel from "./components/panels/NegativeQueryPanel";
+import QueryAutocompleteDemo from "./components/panels/QueryAutocompleteDemo";
+import VectorMap2D from "./components/panels/VectorMap2D";
+import SimilarityHeatmap from "./components/panels/SimilarityHeatmap";
+import LatencyTimeline from "./components/panels/LatencyTimeline";
+import CostEstimator from "./components/panels/CostEstimator";
+import IndexMigrationPanel from "./components/panels/IndexMigrationPanel";
+import NamespaceManagerPanel from "./components/panels/NamespaceManagerPanel";
+import DuplicateDetectorPanel from "./components/panels/DuplicateDetectorPanel";
+import ChangeLogPanel from "./components/panels/ChangeLogPanel";
+import ScheduledQueriesPanel from "./components/panels/ScheduledQueriesPanel";
+import ShareableLinkPanel from "./components/panels/ShareableLinkPanel";
+import QueryCollectionsPanel from "./components/panels/QueryCollectionsPanel";
+import GoldenDatasetPanel from "./components/panels/GoldenDatasetPanel";
+import RelevanceFeedbackPanel from "./components/panels/RelevanceFeedbackPanel";
+import AIChatBot from "./components/chat/AIChatBot";
 import { ToastProvider, toast } from "./components/layout/Toast";
 import { useQueryHistory } from "./hooks/useQueryHistory";
 import { exportJSON, exportCSV } from "./utils/exportResults";
 import styles from "./App.module.css";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "/api";
 const DESTRUCTIVE = ["delete", "drop", "truncate", "remove all", "clear", "wipe"];
 
 /* ── Skeleton loading cards ────────────────────── */
@@ -121,7 +140,7 @@ export default function App() {
   const [showMetrics, setShowMetrics]   = useState(false);
   const [showUpsert, setShowUpsert]     = useState(false);
   const [safeMode, setSafeMode]         = useState(true);
-  const [theme, setTheme]               = useState(() => localStorage.getItem("vdb_theme") || "dark");
+  const [theme, setTheme]               = useState(() => localStorage.getItem("vdb_theme") || "aurora");
   const [sidebarOpen, setSidebarOpen]   = useState(false); // mobile drawer
   const pendingQuery = useRef(null);
   const lastQueryRef = useRef("");
@@ -157,6 +176,28 @@ export default function App() {
   const [showPromptPG, setShowPromptPG]       = useState(false);
   const [showOptimize, setShowOptimize]       = useState(false);
   const [showStreaming, setShowStreaming]      = useState(false);
+  const [showMobileMore, setShowMobileMore]   = useState(false);
+
+  // 20 new feature panels
+  const [showBatchSearch, setShowBatchSearch]         = useState(false);
+  const [showQueryDiff, setShowQueryDiff]             = useState(false);
+  const [showMetadataFilter, setShowMetadataFilter]   = useState(false);
+  const [showNegativeQuery, setShowNegativeQuery]     = useState(false);
+  const [showAutoComplete, setShowAutoComplete]       = useState(false);
+  const [showVectorMap, setShowVectorMap]             = useState(false);
+  const [showHeatmap, setShowHeatmap]                 = useState(false);
+  const [showLatency, setShowLatency]                 = useState(false);
+  const [showCostEstimator, setShowCostEstimator]     = useState(false);
+  const [showIndexMigration, setShowIndexMigration]   = useState(false);
+  const [showNsManager, setShowNsManager]             = useState(false);
+  const [showDuplicates, setShowDuplicates]           = useState(false);
+  const [showChangeLog, setShowChangeLog]             = useState(false);
+  const [showScheduled, setShowScheduled]             = useState(false);
+  const [showShareLink, setShowShareLink]             = useState(false);
+  const [showQueryCols, setShowQueryCols]             = useState(false);
+  const [showGoldenDS, setShowGoldenDS]               = useState(false);
+  const [showFeedback, setShowFeedback]               = useState(false);
+  const [chatOpen, setChatOpen]                       = useState(false);
 
   /* ── Init ─────────────────────────────────────── */
   useEffect(() => {
@@ -412,8 +453,8 @@ export default function App() {
     setSafeMode(v => { toast(!v ? "Safe Mode ON" : "Safe Mode OFF", "info"); return !v; });
   }, []);
 
-  const THEMES = ["dark", "light", "midnight", "ocean"];
-  const THEME_ICONS = { dark: "☀️", light: "🌙", midnight: "🌌", ocean: "🌊" };
+  const THEMES = ["aurora", "dark", "neon", "rose", "midnight", "ocean", "light"];
+  const THEME_ICONS = { aurora: "✦", dark: "☀️", neon: "⚡", rose: "🌸", midnight: "🌌", ocean: "🌊", light: "🌙" };
   const toggleTheme = useCallback(() => {
     setTheme(t => {
       const next = THEMES[(THEMES.indexOf(t) + 1) % THEMES.length];
@@ -443,70 +484,107 @@ export default function App() {
 
         {/* ── Header ──────────────────────────────── */}
         <header className={styles.header} role="banner">
-          <div className={styles.hLeft}>
-            {/* Mobile hamburger */}
-            <button
-              className={styles.hamburger}
-              onClick={() => setSidebarOpen(v => !v)}
-              aria-label="Toggle sidebar"
-            >
-              ☰
-            </button>
-            <div className={styles.logo}>
-              <span className={styles.logoIcon}>⬡</span>
-              <span className={styles.logoText}>VectorDB Analyzer</span>
+
+          {/* ── Row 1: Logo + Controls ── */}
+          <div className={styles.headerTop}>
+            <div className={styles.hLeft}>
+              <button
+                className={styles.hamburger}
+                onClick={() => setSidebarOpen(v => !v)}
+                aria-label="Toggle sidebar"
+              >
+                <span className={styles.hamburgerIcon}>☰</span>
+              </button>
+              <div className={styles.logo}>
+                <span className={styles.logoIcon}>⬡</span>
+                <span className={styles.logoText}>VectorDB Analyzer</span>
+              </div>
+              <span className={styles.badge}>15 DBs</span>
             </div>
-            <span className={styles.badge}>15 DBs</span>
+
+            <div className={styles.hCenter}>
+              <button
+                className={`${styles.modeBtn} ${compareMode ? styles.modeBtnOn : ""}`}
+                onClick={toggleCompareMode}
+              >
+                <span>⊞</span>
+                <span>{compareMode ? `Compare · ${selectedDBs.size} DBs` : "Compare"}</span>
+              </button>
+            </div>
+
+            <div className={styles.hRight}>
+              <button
+                className={`${styles.topBtn} ${safeMode ? styles.topBtnActive : ""}`}
+                onClick={toggleSafeMode}
+                title={safeMode ? "Safe Mode ON" : "Safe Mode OFF"}
+              >
+                <span className={styles.topBtnIcon}>{safeMode ? "🛡️" : "⚠️"}</span>
+                <span className={styles.topBtnLabel}>{safeMode ? "Safe" : "Unsafe"}</span>
+              </button>
+              <button className={styles.topBtn} onClick={toggleTheme} title={`Theme: ${theme}`}>
+                <span className={styles.topBtnIcon}>{THEME_ICONS[theme] || "☀️"}</span>
+                <span className={styles.topBtnLabel}>{theme}</span>
+              </button>
+              <div className={styles.statusPill}>
+                <span className={`${styles.dot} ${backendOk ? styles.dotOn : styles.dotOff}`} />
+                <span className={styles.dotLabel}>{backendOk ? "Online" : "Offline"}</span>
+              </div>
+            </div>
           </div>
 
-          <div className={styles.hCenter}>
-            <button
-              className={`${styles.modeBtn} ${compareMode ? styles.modeBtnOn : ""}`}
-              onClick={toggleCompareMode}
-            >
-              ⊞ {compareMode ? `Compare · ${selectedDBs.size} DBs` : "Compare Mode"}
-            </button>
-          </div>
-
-          <div className={styles.hRight}>
+          {/* ── Row 2: Feature Toolbar ── */}
+          <div className={styles.toolbar} role="toolbar" aria-label="Features">
             {[
-              { icon: safeMode ? "🛡️" : "⚠️", label: safeMode ? "Safe" : "Unsafe", onClick: toggleSafeMode, active: safeMode },
-              { icon: THEME_ICONS[theme] || "☀️", label: theme, onClick: toggleTheme },
-              { icon: "🔬", label: "Inspector", onClick: () => setShowEmbInspector(true) },
-              { icon: "⚡", label: "Hybrid", onClick: () => setShowHybrid(true) },
-              { icon: "⬆️", label: "Ingest", onClick: () => setShowUpsert(true) },
-              { icon: "💾", label: "Saved", onClick: () => setShowBook(true) },
-              { icon: "📊", label: "Graph", onClick: () => setShowGraph(v => !v), active: showGraph },
-              { icon: "🐛", label: "Debug", onClick: () => setShowApiDebug(v => !v), active: showApiDebug },
-              { icon: "🧪", label: "Vectors", onClick: () => setShowPlayground(true) },
-              { icon: "🧠", label: "RAG Eval", onClick: () => setShowRAGEval(true) },
-              { icon: "🔄", label: "Rewrite", onClick: () => setShowRewrite(true) },
-              { icon: "🧬", label: "Chunks", onClick: () => setShowChunking(true) },
-              { icon: "📉", label: "Drift", onClick: () => setShowDrift(true) },
-              { icon: "⚖", label: "A/B Test", onClick: () => setShowABTest(true) },
-              { icon: "📡", label: "Monitor", onClick: () => setShowMonitor(true) },
-              { icon: "🏅", label: "Rerank", onClick: () => setShowReranker(true) },
-              { icon: "💬", label: "Prompt", onClick: () => setShowPromptPG(true) },
-              { icon: "🤖", label: "Optimize", onClick: () => setShowOptimize(true) },
-              { icon: "🌊", label: "Stream", onClick: () => setShowStreaming(true) },
+              { icon: "🔬", label: "Inspector",  onClick: () => setShowEmbInspector(true) },
+              { icon: "⚡", label: "Hybrid",     onClick: () => setShowHybrid(true) },
+              { icon: "⬆️", label: "Ingest",     onClick: () => setShowUpsert(true) },
+              { icon: "💾", label: "Saved",      onClick: () => setShowBook(true) },
+              { icon: "📊", label: "Graph",      onClick: () => setShowGraph(v => !v), active: showGraph },
+              { icon: "🐛", label: "Debug",      onClick: () => setShowApiDebug(v => !v), active: showApiDebug },
+              { icon: "🧪", label: "Vectors",    onClick: () => setShowPlayground(true) },
+              { icon: "🧠", label: "RAG Eval",   onClick: () => setShowRAGEval(true) },
+              { icon: "🔄", label: "Rewrite",    onClick: () => setShowRewrite(true) },
+              { icon: "🧬", label: "Chunks",     onClick: () => setShowChunking(true) },
+              { icon: "📉", label: "Drift",      onClick: () => setShowDrift(true) },
+              { icon: "⚖️", label: "A/B Test",  onClick: () => setShowABTest(true) },
+              { icon: "📡", label: "Monitor",    onClick: () => setShowMonitor(true) },
+              { icon: "🏅", label: "Rerank",     onClick: () => setShowReranker(true) },
+              { icon: "💬", label: "Prompt",     onClick: () => setShowPromptPG(true) },
+              { icon: "🤖", label: "Optimize",   onClick: () => setShowOptimize(true) },
+              { icon: "🌊", label: "Stream",     onClick: () => setShowStreaming(true) },
+              { icon: "📦", label: "Batch",      onClick: () => setShowBatchSearch(true) },
+              { icon: "🆚", label: "Diff",       onClick: () => setShowQueryDiff(true) },
+              { icon: "🔢", label: "Filters",    onClick: () => setShowMetadataFilter(true) },
+              { icon: "➖", label: "Negative",   onClick: () => setShowNegativeQuery(true) },
+              { icon: "💡", label: "Suggest",    onClick: () => setShowAutoComplete(true) },
+              { icon: "🗺️", label: "Map 2D",    onClick: () => setShowVectorMap(true) },
+              { icon: "🌡️", label: "Heatmap",   onClick: () => setShowHeatmap(true) },
+              { icon: "⏱️", label: "Latency",   onClick: () => setShowLatency(true) },
+              { icon: "💰", label: "Cost",       onClick: () => setShowCostEstimator(true) },
+              { icon: "🚚", label: "Migrate",    onClick: () => setShowIndexMigration(true) },
+              { icon: "🗂️", label: "NS Mgr",    onClick: () => setShowNsManager(true) },
+              { icon: "🔁", label: "Dupes",      onClick: () => setShowDuplicates(true) },
+              { icon: "📋", label: "ChangeLog",  onClick: () => setShowChangeLog(true) },
+              { icon: "⏰", label: "Scheduled",  onClick: () => setShowScheduled(true) },
+              { icon: "🔗", label: "Share",      onClick: () => setShowShareLink(true) },
+              { icon: "📁", label: "Collections",onClick: () => setShowQueryCols(true) },
+              { icon: "🏆", label: "Golden",     onClick: () => setShowGoldenDS(true) },
+              { icon: "👍", label: "Feedback",   onClick: () => setShowFeedback(true) },
+              { icon: "📈", label: "Metrics",    onClick: () => setShowMetrics(true) },
+              { icon: "📊", label: "Dashboard",  onClick: () => setShowDash(true) },
             ].map(({ icon, label, onClick, active }) => (
               <button
                 key={label}
-                className={`${styles.iconBtn} ${active ? styles.iconBtnOn : ""}`}
+                className={`${styles.toolBtn} ${active ? styles.toolBtnOn : ""}`}
                 onClick={onClick}
                 aria-label={label}
               >
-                <span className={styles.iBtnIcon}>{icon}</span>
-                <span className={styles.iBtnLabel}>{label}</span>
+                <span className={styles.toolIcon}>{icon}</span>
+                <span className={styles.toolLabel}>{label}</span>
               </button>
             ))}
-            <button className={styles.dashBtn} onClick={() => setShowMetrics(true)}>📈 Metrics</button>
-            <button className={styles.dashBtn} onClick={() => setShowDash(true)}>📊 Dashboard</button>
-            <div className={styles.statusRow}>
-              <span className={`${styles.dot} ${backendOk ? styles.dotOn : styles.dotOff}`} />
-              <span className={styles.dotLabel}>{backendOk ? "Connected" : "Offline"}</span>
-            </div>
           </div>
+
         </header>
 
         {/* ── Body ────────────────────────────────── */}
@@ -756,6 +834,190 @@ export default function App() {
         {/* Feature 1: Result Explorer */}
         {explorerItem && (
           <ResultExplorer item={explorerItem} onClose={() => setExplorerItem(null)} />
+        )}
+
+        {/* ── 20 New Feature Panels ────────────── */}
+        {showBatchSearch && (
+          <BatchSearchPanel providers={providers} dbConfigs={dbConfigs} embCfg={embCfg} onClose={() => setShowBatchSearch(false)} />
+        )}
+        {showQueryDiff && (
+          <QueryDiffPanel providers={providers} dbConfigs={dbConfigs} embCfg={embCfg} onClose={() => setShowQueryDiff(false)} />
+        )}
+        {showMetadataFilter && (
+          <MetadataFilterPanel
+            onApply={filter => { setShowMetadataFilter(false); toast(`Filter applied: ${JSON.stringify(filter).slice(0,60)}…`, "success"); }}
+            onClose={() => setShowMetadataFilter(false)} />
+        )}
+        {showNegativeQuery && (
+          <NegativeQueryPanel providers={providers} dbConfigs={dbConfigs} embCfg={embCfg} onClose={() => setShowNegativeQuery(false)} />
+        )}
+        {showAutoComplete && (
+          <QueryAutocompleteDemo onClose={() => setShowAutoComplete(false)} />
+        )}
+        {showVectorMap && (
+          <VectorMap2D onClose={() => setShowVectorMap(false)} />
+        )}
+        {showHeatmap && (
+          <SimilarityHeatmap results={singleResults} onClose={() => setShowHeatmap(false)} />
+        )}
+        {showLatency && (
+          <LatencyTimeline onClose={() => setShowLatency(false)} />
+        )}
+        {showCostEstimator && (
+          <CostEstimator onClose={() => setShowCostEstimator(false)} />
+        )}
+        {showIndexMigration && (
+          <IndexMigrationPanel providers={providers.map(p => p.name)} dbConfigs={dbConfigs} onClose={() => setShowIndexMigration(false)} />
+        )}
+        {showNsManager && (
+          <NamespaceManagerPanel providers={providers.map(p => p.name)} dbConfigs={dbConfigs} onClose={() => setShowNsManager(false)} />
+        )}
+        {showDuplicates && (
+          <DuplicateDetectorPanel providers={providers.map(p => p.name)} dbConfigs={dbConfigs} embCfg={embCfg} onClose={() => setShowDuplicates(false)} />
+        )}
+        {showChangeLog && (
+          <ChangeLogPanel onClose={() => setShowChangeLog(false)} />
+        )}
+        {showScheduled && (
+          <ScheduledQueriesPanel providers={providers.map(p => p.name)} dbConfigs={dbConfigs} embCfg={embCfg} onClose={() => setShowScheduled(false)} />
+        )}
+        {showShareLink && (
+          <ShareableLinkPanel
+            currentQuery={lastQueryRef.current}
+            selectedDB={[...selectedDBs][0] || ""}
+            dbConfigs={dbConfigs}
+            embCfg={embCfg}
+            onClose={() => setShowShareLink(false)}
+          />
+        )}
+        {showQueryCols && (
+          <QueryCollectionsPanel onRunQuery={q => { setShowQueryCols(false); handleSearch(q); }} onClose={() => setShowQueryCols(false)} />
+        )}
+        {showGoldenDS && (
+          <GoldenDatasetPanel providers={providers.map(p => p.name)} dbConfigs={dbConfigs} embCfg={embCfg} onClose={() => setShowGoldenDS(false)} />
+        )}
+        {showFeedback && (
+          <RelevanceFeedbackPanel results={singleResults} currentQuery={lastQueryRef.current} selectedDB={[...selectedDBs][0] || ""} onClose={() => setShowFeedback(false)} />
+        )}
+
+        {/* ── AI Chatbot ───────────────────────── */}
+        <AIChatBot
+          open={chatOpen}
+          onToggle={() => setChatOpen(v => !v)}
+          searchContext={{
+            query: lastQueryRef.current,
+            resultCount: totalCount,
+            dbType: [...selectedDBs][0],
+            embeddingModel: embCfg.embedding_model,
+            embeddingDim: lastSearchMeta?.dim,
+            latency: allResults ? Math.round([...allResults.values()].reduce((a, d) => a + d.latency_ms, 0) / (allResults.size || 1)) : null,
+            hasResults: hasResults,
+            openai_api_key: embCfg.openai_api_key,
+          }}
+        />
+
+        {/* ── Mobile Bottom Bar ───────────────────── */}
+        {/* ── Mobile Bottom Nav ───────────────────── */}
+        <nav className={styles.mobileNav} aria-label="Mobile navigation">
+          {/* Fixed primary icons */}
+          <div className={styles.mobileNavFixed}>
+            <button
+              className={`${styles.mobileNavBtn} ${sidebarOpen ? styles.mobileNavBtnActive : ""}`}
+              onClick={() => setSidebarOpen(v => !v)}
+            >
+              <span className={styles.mobileNavIcon}>🗄️</span>
+              <span className={styles.mobileNavLabel}>DB</span>
+            </button>
+            <button
+              className={`${styles.mobileNavBtn} ${compareMode ? styles.mobileNavBtnActive : ""}`}
+              onClick={toggleCompareMode}
+            >
+              <span className={styles.mobileNavIcon}>{compareMode ? "⊞" : "⊟"}</span>
+              <span className={styles.mobileNavLabel}>Compare</span>
+            </button>
+          </div>
+
+          {/* Scrollable secondary icons */}
+          <div className={styles.mobileNavScroll}>
+            {[
+              { icon: "🔬", label: "Inspect",  onClick: () => setShowEmbInspector(true) },
+              { icon: "⚡", label: "Hybrid",   onClick: () => setShowHybrid(true) },
+              { icon: "⬆️", label: "Ingest",   onClick: () => setShowUpsert(true) },
+              { icon: "💾", label: "Saved",    onClick: () => setShowBook(true) },
+              { icon: "🧪", label: "Vectors",  onClick: () => setShowPlayground(true) },
+              { icon: "📊", label: "Graph",    onClick: () => setShowGraph(v => !v) },
+              { icon: "🧠", label: "RAG",      onClick: () => setShowRAGEval(true) },
+              { icon: "📉", label: "Drift",    onClick: () => setShowDrift(true) },
+              { icon: "📡", label: "Monitor",  onClick: () => setShowMonitor(true) },
+              { icon: "🗺️", label: "Map",      onClick: () => setShowVectorMap(true) },
+              { icon: "💰", label: "Cost",     onClick: () => setShowCostEstimator(true) },
+              { icon: "🔗", label: "Share",    onClick: () => setShowShareLink(true) },
+              { icon: "📈", label: "Metrics",  onClick: () => setShowMetrics(true) },
+              { icon: "📊", label: "Dash",     onClick: () => setShowDash(true) },
+            ].map(({ icon, label, onClick }) => (
+              <button key={label} className={styles.mobileNavScrollBtn} onClick={onClick}>
+                <span className={styles.mobileNavIcon}>{icon}</span>
+                <span className={styles.mobileNavLabel}>{label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* More button */}
+          <div className={styles.mobileNavFixed}>
+            <button className={styles.mobileNavBtn} onClick={() => setShowMobileMore(true)}>
+              <span className={styles.mobileNavIcon}>⋯</span>
+              <span className={styles.mobileNavLabel}>More</span>
+            </button>
+          </div>
+        </nav>
+
+        {/* ── Mobile More Sheet ────────────────────── */}
+        {showMobileMore && (
+          <div className={styles.moreBackdrop} onClick={() => setShowMobileMore(false)}>
+            <div className={styles.moreSheet} onClick={e => e.stopPropagation()}>
+              <div className={styles.moreHandle} />
+              <div className={styles.moreTitle}>All Features</div>
+              <div className={styles.moreGrid}>
+                {[
+                  { icon: "🔬", label: "Inspector",  onClick: () => { setShowEmbInspector(true);  setShowMobileMore(false); } },
+                  { icon: "⚡", label: "Hybrid",     onClick: () => { setShowHybrid(true);        setShowMobileMore(false); } },
+                  { icon: "⬆️", label: "Ingest",     onClick: () => { setShowUpsert(true);        setShowMobileMore(false); } },
+                  { icon: "📊", label: "Graph",      onClick: () => { setShowGraph(v => !v);      setShowMobileMore(false); } },
+                  { icon: "🐛", label: "Debug",      onClick: () => { setShowApiDebug(v => !v);   setShowMobileMore(false); } },
+                  { icon: "🧪", label: "Vectors",    onClick: () => { setShowPlayground(true);    setShowMobileMore(false); } },
+                  { icon: "🧠", label: "RAG Eval",   onClick: () => { setShowRAGEval(true);       setShowMobileMore(false); } },
+                  { icon: "🔄", label: "Rewrite",    onClick: () => { setShowRewrite(true);       setShowMobileMore(false); } },
+                  { icon: "🧬", label: "Chunks",     onClick: () => { setShowChunking(true);      setShowMobileMore(false); } },
+                  { icon: "📉", label: "Drift",      onClick: () => { setShowDrift(true);         setShowMobileMore(false); } },
+                  { icon: "⚖",  label: "A/B Test",  onClick: () => { setShowABTest(true);        setShowMobileMore(false); } },
+                  { icon: "📡", label: "Monitor",    onClick: () => { setShowMonitor(true);       setShowMobileMore(false); } },
+                  { icon: "🏅", label: "Rerank",     onClick: () => { setShowReranker(true);      setShowMobileMore(false); } },
+                  { icon: "💬", label: "Prompt",     onClick: () => { setShowPromptPG(true);      setShowMobileMore(false); } },
+                  { icon: "🤖", label: "Optimize",   onClick: () => { setShowOptimize(true);      setShowMobileMore(false); } },
+                  { icon: "🌊", label: "Stream",     onClick: () => { setShowStreaming(true);       setShowMobileMore(false); } },
+                  { icon: "📦", label: "Batch",      onClick: () => { setShowBatchSearch(true);    setShowMobileMore(false); } },
+                  { icon: "⚖️", label: "Diff",       onClick: () => { setShowQueryDiff(true);      setShowMobileMore(false); } },
+                  { icon: "🔢", label: "Filters",    onClick: () => { setShowMetadataFilter(true); setShowMobileMore(false); } },
+                  { icon: "➖", label: "Negative",   onClick: () => { setShowNegativeQuery(true);  setShowMobileMore(false); } },
+                  { icon: "🗺️", label: "Map 2D",    onClick: () => { setShowVectorMap(true);       setShowMobileMore(false); } },
+                  { icon: "🌡️", label: "Heatmap",   onClick: () => { setShowHeatmap(true);         setShowMobileMore(false); } },
+                  { icon: "💰", label: "Cost",       onClick: () => { setShowCostEstimator(true);   setShowMobileMore(false); } },
+                  { icon: "🏆", label: "Golden DS",  onClick: () => { setShowGoldenDS(true);        setShowMobileMore(false); } },
+                  { icon: "👍", label: "Feedback",   onClick: () => { setShowFeedback(true);        setShowMobileMore(false); } },
+                  { icon: "💬", label: "AI Chat",    onClick: () => { setChatOpen(true);            setShowMobileMore(false); } },
+                  { icon: "📈", label: "Metrics",    onClick: () => { setShowMetrics(true);         setShowMobileMore(false); } },
+                  { icon: "📊", label: "Dashboard",  onClick: () => { setShowDash(true);            setShowMobileMore(false); } },
+                  { icon: safeMode ? "🛡️" : "⚠️", label: safeMode ? "Safe ON" : "Safe OFF", onClick: () => { toggleSafeMode(); } },
+                  { icon: THEME_ICONS[theme] || "☀️", label: "Theme",  onClick: () => { toggleTheme(); } },
+                ].map(({ icon, label, onClick }) => (
+                  <button key={label} className={styles.moreItem} onClick={onClick}>
+                    <span className={styles.moreItemIcon}>{icon}</span>
+                    <span className={styles.moreItemLabel}>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </ToastProvider>

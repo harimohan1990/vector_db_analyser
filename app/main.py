@@ -852,3 +852,523 @@ async def explain_deep(req: ExplainDeepRequest):
                 (f"Matched: {', '.join(matched)}." if matched else "Pure vector match — no direct keyword overlap."),
         },
     }
+
+
+# ── New Feature Models ────────────────────────────────────────────────────────
+
+class BatchSearchRequest(BaseModel):
+    queries: list[str]
+    db_type: str
+    config: dict = {}
+    top_k: int = 5
+    openai_api_key: str = ""
+    embedding_model: str = "local"
+
+class TSNERequest(BaseModel):
+    texts: list[str]
+    openai_api_key: str = ""
+    embedding_model: str = "local"
+    perplexity: int = 5
+
+class NegativeSearchRequest(BaseModel):
+    query: str
+    negative: str
+    db_type: str
+    config: dict = {}
+    top_k: int = 5
+    openai_api_key: str = ""
+    embedding_model: str = "local"
+
+class MigrationRequest(BaseModel):
+    source_db: str
+    source_config: dict = {}
+    target_db: str
+    target_config: dict = {}
+    ids: list[str] = []
+
+class NamespaceRequest(BaseModel):
+    db_type: str
+    config: dict = {}
+    namespace: str = ""
+
+class FeedbackRequest(BaseModel):
+    query: str
+    result_id: str
+    relevant: bool
+    db_type: str = ""
+
+class ScheduledQueryRequest(BaseModel):
+    name: str
+    query: str
+    db_type: str
+    config: dict = {}
+    interval_minutes: int = 60
+    openai_api_key: str = ""
+    embedding_model: str = "local"
+
+class ChangeLogEntry(BaseModel):
+    action: str
+    details: str = ""
+
+class AutocompleteRequest(BaseModel):
+    prefix: str
+    limit: int = 5
+
+class GoldenDatasetEntry(BaseModel):
+    query: str
+    expected_ids: list[str]
+    db_type: str = ""
+    notes: str = ""
+
+class DuplicateRequest(BaseModel):
+    db_type: str
+    config: dict = {}
+    threshold: float = 0.97
+    sample_size: int = 50
+    openai_api_key: str = ""
+    embedding_model: str = "local"
+
+class HallucinationRequest(BaseModel):
+    answer: str
+    chunks: list[str]
+
+class CostRequest(BaseModel):
+    queries_per_day: int
+    embedding_model: str = "local"
+    db_type: str = "pinecone"
+    top_k: int = 5
+
+
+# ── Batch Search ──────────────────────────────────────────────────────────────
+@app.post("/search/batch")
+async def batch_search(req: BatchSearchRequest):
+    if req.db_type not in PROVIDERS:
+        raise HTTPException(400, f"Unknown db_type '{req.db_type}'")
+    results = []
+    for q in req.queries:
+        try:
+            emb = await asyncio.to_thread(
+                get_embedding_cached, q, req.openai_api_key or None, req.embedding_model
+            )
+            t0 = time.perf_counter()
+            res = await asyncio.to_thread(
+                PROVIDERS[req.db_type]().search, emb.vector, req.config, req.top_k
+            )
+            results.append({"query": q, "results": res, "latency_ms": round((time.perf_counter()-t0)*1000, 1)})
+        except Exception as e:
+            results.append({"query": q, "error": str(e), "results": []})
+    return {"batch": results, "total": len(results)}
+
+
+# ── t-SNE / 2D Vector Map ─────────────────────────────────────────────────────
+@app.post("/visualize/tsne")
+async def visualize_tsne(req: TSNERequest):
+    if len(req.texts) < 2:
+        raise HTTPException(400, "Need at least 2 texts")
+    vectors = []
+    for t in req.texts[:50]:  # cap at 50 for performance
+        emb = await asyncio.to_thread(
+            get_embedding_cached, t, req.openai_api_key or None, req.embedding_model
+        )
+        vectors.append(emb.vector)
+    # Simple PCA-based 2D projection (no sklearn needed)
+    import math
+    n = len(vectors)
+    dim = len(vectors[0])
+    # Centre
+    mean = [sum(v[d] for v in vectors)/n for d in range(dim)]
+    centred = [[v[d]-mean[d] for d in range(dim)] for v in vectors]
+    # Project onto first 2 principal components via power iteration
+    def dot(a, b): return sum(x*y for x,y in zip(a,b))
+    def norm(a): return math.sqrt(dot(a,a)) or 1e-9
+    def scale(a, s): return [x*s for x in a]
+    def sub(a, b): return [x-y for x,y in zip(a,b)]
+    def project_out(vecs, direction):
+        return [sub(v, scale(direction, dot(v, direction))) for v in vecs]
+    # PC1
+    pc1 = centred[0][:]
+    for _ in range(20):
+        pc1 = [sum(centred[i][d]*dot(centred[i], pc1) for i in range(n)) for d in range(dim)]
+        n1 = norm(pc1); pc1 = [x/n1 for x in pc1]
+    # PC2
+    c2 = project_out(centred, pc1)
+    pc2 = c2[0][:]
+    for _ in range(20):
+        pc2 = [sum(c2[i][d]*dot(c2[i], pc2) for i in range(n)) for d in range(dim)]
+        n2 = norm(pc2); pc2 = [x/n2 for x in pc2]
+    points = [{"text": req.texts[i], "x": round(dot(centred[i], pc1), 4), "y": round(dot(centred[i], pc2), 4)} for i in range(n)]
+    return {"points": points, "method": "PCA-2D"}
+
+
+# ── Negative Query Search ─────────────────────────────────────────────────────
+@app.post("/search/negative")
+async def negative_search(req: NegativeSearchRequest):
+    if req.db_type not in PROVIDERS:
+        raise HTTPException(400, f"Unknown db_type '{req.db_type}'")
+    pos_emb = await asyncio.to_thread(
+        get_embedding_cached, req.query, req.openai_api_key or None, req.embedding_model
+    )
+    neg_emb = await asyncio.to_thread(
+        get_embedding_cached, req.negative, req.openai_api_key or None, req.embedding_model
+    )
+    # Subtract negative direction from positive vector
+    combined = [p - 0.3*n for p, n in zip(pos_emb.vector, neg_emb.vector)]
+    # Re-normalise
+    import math
+    mag = math.sqrt(sum(x*x for x in combined)) or 1e-9
+    combined = [x/mag for x in combined]
+    t0 = time.perf_counter()
+    results = await asyncio.to_thread(
+        PROVIDERS[req.db_type]().search, combined, req.config, req.top_k
+    )
+    return {"results": results, "latency_ms": round((time.perf_counter()-t0)*1000, 1)}
+
+
+# ── Query Autocomplete ────────────────────────────────────────────────────────
+@app.post("/query/autocomplete")
+async def query_autocomplete(req: AutocompleteRequest):
+    history = await asyncio.to_thread(get_history, 100)
+    prefix_lower = req.prefix.lower().strip()
+    matches = []
+    seen = set()
+    for h in history:
+        q = h.get("query", "")
+        if q.lower().startswith(prefix_lower) and q not in seen and q != req.prefix:
+            matches.append(q)
+            seen.add(q)
+        if len(matches) >= req.limit:
+            break
+    return {"suggestions": matches}
+
+
+# ── Hallucination Detector ────────────────────────────────────────────────────
+@app.post("/rag/hallucination")
+async def detect_hallucination(req: HallucinationRequest):
+    answer_words = set(req.answer.lower().split())
+    all_chunk_words = set()
+    for c in req.chunks:
+        all_chunk_words.update(c.lower().split())
+    # Simple overlap score
+    stopwords = {"the","a","an","is","are","was","were","be","been","being","have","has","had",
+                 "do","does","did","will","would","could","should","may","might","shall","can",
+                 "to","of","in","for","on","with","at","by","from","and","or","but","not","it",
+                 "this","that","these","those","i","you","we","they","he","she","its"}
+    ans_content = answer_words - stopwords
+    if not ans_content:
+        return {"score": 1.0, "grounded": True, "unsupported_terms": []}
+    supported = ans_content & all_chunk_words
+    score = len(supported) / len(ans_content)
+    unsupported = list(ans_content - all_chunk_words)[:10]
+    return {
+        "score": round(score, 3),
+        "grounded": score >= 0.5,
+        "supported_terms": len(supported),
+        "total_content_terms": len(ans_content),
+        "unsupported_terms": unsupported
+    }
+
+
+# ── Cost Estimator ────────────────────────────────────────────────────────────
+@app.post("/cost/estimate")
+async def cost_estimate(req: CostRequest):
+    # Pricing per 1M tokens (approximate, 2025)
+    embed_cost_per_1m = {
+        "local": 0.0,
+        "text-embedding-3-small": 0.02,
+        "text-embedding-3-large": 0.13,
+        "text-embedding-ada-002": 0.10,
+    }
+    # DB read cost per 1M queries (approximate)
+    db_read_cost_per_1m = {
+        "pinecone": 0.08,
+        "qdrant": 0.0,
+        "chroma": 0.0,
+        "weaviate": 0.05,
+        "milvus": 0.0,
+    }
+    avg_tokens_per_query = 20
+    queries_per_month = req.queries_per_day * 30
+    embed_price = embed_cost_per_1m.get(req.embedding_model, 0.02)
+    db_price = db_read_cost_per_1m.get(req.db_type, 0.05)
+    embed_monthly = (queries_per_month * avg_tokens_per_query / 1_000_000) * embed_price
+    db_monthly = (queries_per_month / 1_000_000) * db_price
+    total = embed_monthly + db_monthly
+    return {
+        "queries_per_month": queries_per_month,
+        "embedding_cost_usd": round(embed_monthly, 4),
+        "db_cost_usd": round(db_monthly, 4),
+        "total_monthly_usd": round(total, 4),
+        "embedding_model": req.embedding_model,
+        "db_type": req.db_type,
+        "note": "Estimates only. Check provider pricing pages for current rates."
+    }
+
+
+# ── Relevance Feedback ────────────────────────────────────────────────────────
+_feedback_store: list[dict] = []
+
+@app.post("/feedback")
+async def add_feedback(req: FeedbackRequest):
+    entry = {"query": req.query, "result_id": req.result_id, "relevant": req.relevant,
+             "db_type": req.db_type, "ts": time.time()}
+    _feedback_store.append(entry)
+    if len(_feedback_store) > 1000:
+        _feedback_store.pop(0)
+    return {"ok": True, "total_feedback": len(_feedback_store)}
+
+@app.get("/feedback")
+async def get_feedback():
+    return {"feedback": _feedback_store[-100:], "total": len(_feedback_store)}
+
+
+# ── Change Log ────────────────────────────────────────────────────────────────
+_changelog: list[dict] = []
+
+@app.post("/changelog")
+async def add_changelog(entry: ChangeLogEntry):
+    record = {"action": entry.action, "details": entry.details, "ts": time.time(),
+              "ts_str": __import__("datetime").datetime.utcnow().isoformat()}
+    _changelog.append(record)
+    if len(_changelog) > 500:
+        _changelog.pop(0)
+    return {"ok": True}
+
+@app.get("/changelog")
+async def get_changelog():
+    return {"entries": list(reversed(_changelog[-100:])), "total": len(_changelog)}
+
+
+# ── Duplicate Detector ────────────────────────────────────────────────────────
+@app.post("/duplicates/detect")
+async def detect_duplicates(req: DuplicateRequest):
+    if req.db_type not in PROVIDERS:
+        raise HTTPException(400, f"Unknown db_type '{req.db_type}'")
+    try:
+        # Fetch a sample of results using a zero vector to get representative entries
+        import math
+        zero_vector = [0.0] * 384  # default local embedding dim
+        raw_results = await asyncio.to_thread(
+            PROVIDERS[req.db_type]().search, zero_vector, req.config, req.sample_size
+        )
+        result = await asyncio.to_thread(analyze_quality, raw_results, req.threshold)
+        return result
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
+# ── Golden Dataset ────────────────────────────────────────────────────────────
+_golden_dataset: list[dict] = []
+
+@app.post("/golden/add")
+async def golden_add(entry: GoldenDatasetEntry):
+    record = {**entry.dict(), "id": len(_golden_dataset)+1, "ts": time.time()}
+    _golden_dataset.append(record)
+    return {"ok": True, "id": record["id"]}
+
+@app.get("/golden")
+async def golden_list():
+    return {"entries": _golden_dataset, "total": len(_golden_dataset)}
+
+@app.delete("/golden/{entry_id}")
+async def golden_delete(entry_id: int):
+    global _golden_dataset
+    _golden_dataset = [e for e in _golden_dataset if e["id"] != entry_id]
+    return {"ok": True}
+
+@app.post("/golden/run")
+async def golden_run(body: dict):
+    """Run all golden queries and score against expected results."""
+    db_type = body.get("db_type", "")
+    config = body.get("config", {})
+    openai_key = body.get("openai_api_key", "")
+    model = body.get("embedding_model", "local")
+    top_k = body.get("top_k", 10)
+    if db_type not in PROVIDERS:
+        raise HTTPException(400, f"Unknown db_type '{db_type}'")
+    results = []
+    for entry in _golden_dataset:
+        try:
+            emb = await asyncio.to_thread(
+                get_embedding_cached, entry["query"], openai_key or None, model
+            )
+            res = await asyncio.to_thread(
+                PROVIDERS[db_type]().search, emb.vector, config, top_k
+            )
+            returned_ids = [r.get("id","") for r in res]
+            hits = sum(1 for eid in entry["expected_ids"] if eid in returned_ids)
+            precision = hits / len(returned_ids) if returned_ids else 0
+            recall = hits / len(entry["expected_ids"]) if entry["expected_ids"] else 1.0
+            results.append({
+                "query": entry["query"],
+                "expected": entry["expected_ids"],
+                "returned": returned_ids[:5],
+                "hits": hits,
+                "precision": round(precision, 3),
+                "recall": round(recall, 3),
+            })
+        except Exception as e:
+            results.append({"query": entry["query"], "error": str(e)})
+    avg_precision = sum(r.get("precision",0) for r in results)/len(results) if results else 0
+    avg_recall = sum(r.get("recall",0) for r in results)/len(results) if results else 0
+    return {"results": results, "avg_precision": round(avg_precision,3), "avg_recall": round(avg_recall,3)}
+
+
+# ── Scheduled Queries (in-memory) ─────────────────────────────────────────────
+_scheduled: list[dict] = []
+
+@app.post("/scheduled")
+async def create_scheduled(req: ScheduledQueryRequest):
+    record = {**req.dict(), "id": len(_scheduled)+1, "last_run": None, "last_result_count": None, "enabled": True}
+    _scheduled.append(record)
+    return {"ok": True, "id": record["id"]}
+
+@app.get("/scheduled")
+async def list_scheduled():
+    return {"schedules": _scheduled}
+
+@app.delete("/scheduled/{sid}")
+async def delete_scheduled(sid: int):
+    global _scheduled
+    _scheduled = [s for s in _scheduled if s["id"] != sid]
+    return {"ok": True}
+
+@app.post("/scheduled/{sid}/run")
+async def run_scheduled(sid: int):
+    sched = next((s for s in _scheduled if s["id"] == sid), None)
+    if not sched:
+        raise HTTPException(404, "Schedule not found")
+    db_type = sched["db_type"]
+    if db_type not in PROVIDERS:
+        raise HTTPException(400, f"Unknown db_type '{db_type}'")
+    emb = await asyncio.to_thread(
+        get_embedding_cached, sched["query"],
+        sched.get("openai_api_key") or None,
+        sched.get("embedding_model", "local")
+    )
+    t0 = time.perf_counter()
+    results = await asyncio.to_thread(
+        PROVIDERS[db_type]().search, emb.vector, sched.get("config", {}), sched.get("top_k", 5)
+    )
+    sched["last_run"] = __import__("datetime").datetime.utcnow().isoformat()
+    sched["last_result_count"] = len(results)
+    return {"results": results, "latency_ms": round((time.perf_counter()-t0)*1000, 1), "query": sched["query"]}
+
+
+# ── Index Migration ───────────────────────────────────────────────────────────
+@app.post("/migrate")
+async def migrate_index(req: MigrationRequest):
+    """Placeholder: lists what would be migrated. Full migration requires provider-specific fetch APIs."""
+    return {
+        "status": "preview",
+        "source": req.source_db,
+        "target": req.target_db,
+        "note": "Full migration requires read access to source index. Configure source credentials and run.",
+        "estimated_vectors": len(req.ids) if req.ids else "unknown"
+    }
+
+
+# ── Namespace Manager ─────────────────────────────────────────────────────────
+@app.post("/namespace/list")
+async def list_namespaces(req: NamespaceRequest):
+    if req.db_type not in PROVIDERS:
+        raise HTTPException(400, f"Unknown db_type '{req.db_type}'")
+    try:
+        inst = PROVIDERS[req.db_type]()
+        if hasattr(inst, "list_namespaces"):
+            ns = await asyncio.to_thread(inst.list_namespaces, req.config)
+        else:
+            ns = []
+        return {"namespaces": ns}
+    except Exception as e:
+        return {"namespaces": [], "error": str(e)}
+
+
+# ── AI Chatbot ────────────────────────────────────────────────────────────────
+from typing import Optional
+
+class ChatMessage(BaseModel):
+    role: str   # "user" | "assistant"
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+    context: Optional[dict] = None
+    openai_api_key: Optional[str] = ""
+
+_FALLBACK_ANSWERS = {
+    "explain": "Vector search finds semantically similar documents by comparing embedding vectors in high-dimensional space. Higher scores (closer to 1.0) mean more similar content. The top result ranked #1 has the highest cosine similarity to your query embedding.",
+    "query": "To improve search quality: (1) Use more specific queries, (2) Try different embedding models (local 384D is fast, OpenAI 1536D is more accurate), (3) Filter by metadata to narrow the search space, (4) Adjust top_k to see more or fewer results.",
+    "latency": "To reduce latency: (1) Use the local embedding model (no API round-trip), (2) Enable caching (queries are cached by default), (3) Reduce top_k, (4) Use an index with fewer vectors or enable approximate nearest neighbor search.",
+    "config": "For best results: match your embedding model dimension to your index dimension. Local model = 384D, OpenAI text-embedding-3-small = 1536D, text-embedding-3-large = 3072D. Mismatched dimensions cause errors.",
+    "score": "Cosine similarity scores range from 0 to 1. Scores above 0.8 indicate high relevance, 0.5–0.8 moderate relevance, below 0.5 low relevance. For L2 distance, lower is better.",
+    "default": "I can help you with vector search concepts, query optimization, embedding configurations, and interpreting search results. Try asking about search scores, latency, query tips, or embedding models.",
+}
+
+@app.post("/chat")
+async def ai_chat(req: ChatRequest):
+    api_key = (req.openai_api_key or "").strip()
+    last_user = next((m.content for m in reversed(req.messages) if m.role == "user"), "")
+    context = req.context or {}
+
+    # Build context string for system prompt
+    ctx_parts = []
+    if context.get("query"):
+        ctx_parts.append(f"Current query: \"{context['query']}\"")
+    if context.get("resultCount"):
+        ctx_parts.append(f"Results returned: {context['resultCount']}")
+    if context.get("dbType"):
+        ctx_parts.append(f"Database: {context['dbType']}")
+    if context.get("embeddingModel"):
+        ctx_parts.append(f"Embedding model: {context['embeddingModel']} ({context.get('embeddingDim', '?')}D)")
+    if context.get("latency"):
+        ctx_parts.append(f"Last query latency: {context['latency']}ms")
+    ctx_str = "\n".join(ctx_parts) if ctx_parts else "No active search context."
+
+    system_prompt = f"""You are an expert AI assistant for VectorDB Analyzer, a tool for querying and analyzing vector databases.
+You help users understand semantic search results, optimize queries, debug configurations, and learn about vector databases.
+
+Current session context:
+{ctx_str}
+
+Be concise, practical, and technical. Focus on actionable advice.
+If asked about search results, help interpret scores and rankings.
+If asked about configuration, give specific parameter recommendations.
+Supported databases: Pinecone, Qdrant, Weaviate, Chroma, Milvus, OpenSearch, and more."""
+
+    # Try OpenAI if key provided
+    if api_key:
+        try:
+            import openai
+            client = openai.AsyncOpenAI(api_key=api_key)
+            oai_messages = [{"role": "system", "content": system_prompt}]
+            oai_messages += [{"role": m.role, "content": m.content} for m in req.messages]
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=oai_messages,
+                max_tokens=512,
+                temperature=0.7,
+            )
+            return {"message": response.choices[0].message.content, "model": "gpt-4o-mini"}
+        except Exception as e:
+            logger.warning(f"OpenAI chat failed: {e}")
+
+    # Fallback: keyword-based helpful responses
+    low = last_user.lower()
+    if any(w in low for w in ["explain", "mean", "rank", "why", "top result"]):
+        reply = _FALLBACK_ANSWERS["explain"]
+    elif any(w in low for w in ["improve", "better query", "suggest", "search tip"]):
+        reply = _FALLBACK_ANSWERS["query"]
+    elif any(w in low for w in ["latency", "slow", "speed", "fast"]):
+        reply = _FALLBACK_ANSWERS["latency"]
+    elif any(w in low for w in ["config", "dimension", "model", "setup"]):
+        reply = _FALLBACK_ANSWERS["config"]
+    elif any(w in low for w in ["score", "similarity", "cosine", "distance"]):
+        reply = _FALLBACK_ANSWERS["score"]
+    else:
+        reply = _FALLBACK_ANSWERS["default"]
+
+    if ctx_parts:
+        reply += f"\n\n📊 Context: {'; '.join(ctx_parts)}"
+
+    note = " (Add your OpenAI API key in the Config tab for full AI responses.)" if not api_key else ""
+    return {"message": reply + note, "model": "fallback"}

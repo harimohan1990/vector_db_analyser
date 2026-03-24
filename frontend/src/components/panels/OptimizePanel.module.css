@@ -25,3 +25,4 @@
 .suggTitle{font-size:13px;font-weight:600;color:var(--text);flex:1}
 .priority{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
 .suggReason{font-size:12px;color:var(--text4);padding-left:23px;line-height:1.4}
+@media(max-width:640px){.modal{width:calc(100vw - 32px)}.row{flex-direction:column}}
