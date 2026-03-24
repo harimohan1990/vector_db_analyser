@@ -1,6 +1,7 @@
 # ── Core (always required) ────────────────────────
 fastapi
 uvicorn[standard]
+gunicorn
 uvloop
 httptools
 openai

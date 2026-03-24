@@ -13,13 +13,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 # App code
 COPY app/ ./app/
 
-# Data directory for SQLite
-RUN mkdir -p /app/data
+# Data directory for SQLite + non-root user
+RUN mkdir -p /app/data && \
+    useradd -r -u 1001 appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", \
-     "--workers", "4", "--loop", "uvloop", "--http", "httptools"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "--bind", "0.0.0.0:8000"]
