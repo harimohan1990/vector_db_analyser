@@ -19,7 +19,7 @@ psycopg2-binary       # pgvector (PostgreSQL)
 cassandra-driver      # Apache Cassandra
 clickhouse-connect    # ClickHouse
 deeplake              # Deep Lake
-pyvespa               # Vespa
+# pyvespa             # Vespa — requires Rust/maturin build toolchain, install manually if needed
 weaviate-client       # Weaviate
 faiss-cpu             # FAISS (use faiss-gpu on CUDA machines)
 # scann               # ScaNN — Linux only, install separately
