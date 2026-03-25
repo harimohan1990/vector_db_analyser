@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "./PromptPlayground.module.css";
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 const DEFAULT_TEMPLATE = "You are a helpful assistant.\n\nContext:\n{context}\n\nQuestion: {query}\n\nAnswer:";
 

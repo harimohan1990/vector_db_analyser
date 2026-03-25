@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./MetricsPanel.module.css";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 function latColor(ms) {
   if (ms < 300)  return "var(--green)";

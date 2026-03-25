@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import styles from "./StreamingSearch.module.css";
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 function latColor(ms) { return ms < 300 ? "var(--green)" : ms < 800 ? "var(--amber)" : "var(--red)"; }
 

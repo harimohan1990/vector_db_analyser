@@ -26,14 +26,14 @@ export default function Dashboard({ onClose, onRerun }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8000/history?limit=100")
+    fetch(`${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/history?limit=100`)
       .then((r) => r.json())
       .then((data) => { setHistory(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
   async function clearAll() {
-    await fetch("http://localhost:8000/history", { method: "DELETE" });
+    await fetch(`${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/history`, { method: "DELETE" });
     setHistory([]);
   }
 

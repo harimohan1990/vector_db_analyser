@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "./ChunkingPanel.module.css";
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 const COLORS = ["var(--accent)","var(--green)","var(--amber)","#e879f9"];
 
 export default function ChunkingPanel({ onClose }) {

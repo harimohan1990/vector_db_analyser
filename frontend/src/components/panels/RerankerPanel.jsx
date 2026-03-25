@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "./RerankerPanel.module.css";
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 function ResultRow({ rank, item, isReranked }) {
   const scoreKey = isReranked ? "rerank_score" : "score";

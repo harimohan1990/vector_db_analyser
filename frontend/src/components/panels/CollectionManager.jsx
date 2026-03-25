@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import styles from "./CollectionManager.module.css";
 import cpStyles from "./ConfigPanel.module.css";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export default function CollectionManager({ selectedDBs, dbConfigs, compareMode, onUseCollection }) {
   const [collections, setCollections]   = useState({});

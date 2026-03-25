@@ -46,7 +46,7 @@ export default function Sidebar({
     setNsLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:8000/collections/${currentProviderForNs.name}?${params.toString()}`
+        `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/collections/${currentProviderForNs.name}?${params.toString()}`
       );
       const data = await res.json();
       const cols = data.collections || [];

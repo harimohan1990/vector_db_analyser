@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import styles from "./DriftPanel.module.css";
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export default function DriftPanel({ embCfg, onClose }) {
   const [snapshots, setSnapshots] = useState([]);

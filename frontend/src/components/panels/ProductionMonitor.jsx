@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./ProductionMonitor.module.css";
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 function latColor(ms) { return ms < 200 ? "var(--green)" : ms < 600 ? "var(--amber)" : "var(--red)"; }
 

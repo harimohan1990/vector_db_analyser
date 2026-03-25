@@ -1,7 +1,7 @@
 import { useState } from "react";
 import styles from "./UpsertPanel.module.css";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export default function UpsertPanel({ selectedDBs, dbConfigs, embCfg, onClose }) {
   const db = [...selectedDBs][0] || "";

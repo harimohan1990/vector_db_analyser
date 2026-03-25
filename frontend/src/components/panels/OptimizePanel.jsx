@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "./OptimizePanel.module.css";
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 const PRIORITY_COLOR = { high: "var(--red)", medium: "var(--amber)", low: "var(--green)" };
 const CATEGORY_ICON = { database: "🗄", embedding: "🧠", index: "📐", chunking: "🧬", general: "✅" };

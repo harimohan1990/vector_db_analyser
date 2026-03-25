@@ -3,7 +3,7 @@ import styles from "./EmbeddingInspector.module.css";
 import { copyToClipboard } from "../../utils/clipboard";
 import { toast } from "../layout/Toast";
 
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export default function EmbeddingInspector({ embCfg, onClose }) {
   const [text, setText] = useState("");

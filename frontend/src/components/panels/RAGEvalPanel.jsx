@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "./RAGEvalPanel.module.css";
-const API = "http://localhost:8000";
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 const METRIC_INFO = {
   "precision@1":"Fraction of top-1 result that's relevant","precision@3":"Fraction of top-3 relevant",
