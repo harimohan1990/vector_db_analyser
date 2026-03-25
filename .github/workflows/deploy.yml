@@ -65,5 +65,7 @@ jobs:
           file: frontend/Dockerfile
           push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
+          build-args: |
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
